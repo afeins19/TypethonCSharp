@@ -13,31 +13,54 @@ class Program
         while (true)
         {   
             Console.Write("c[_] >> ");
-            var line = Console.ReadLine();
             
-            // temporary exit condition (empty line) 
-            if (string.IsNullOrEmpty(line))
+            var line = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(line))
                 return;
+            
+            var parser = new Parser(line);
+            var expression = parser.Parse();
 
-            var lexer = new Lexer(line);
-            while (true)
-            {
-                var token = lexer.NextToken();
-                
-                if (token.Kind == SyntaxKind.EndOfFileToken)
-                    break; // end of file reached 
-                
-                Console.Write($"{ token.Kind } : '{ token.Text }' ");
-                if (token.Value != null)
-                    Console.Write($" | val={token.Value}");
-                
-                Console.WriteLine();
-                
-
-            }
-
+            var color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green; 
+            
+            PrettyPrint(expression);
+            Console.ForegroundColor = color; // reset the color for non-tree spaces 
+            
         }
         
+    }
+
+    static void PrettyPrint(SyntaxNode node, string indent = "", bool isLast = false)
+    {
+        
+        
+        
+        var marker = isLast ? "\u2514\u2500\u2500" : "\u251c\u2500\u2500";
+        
+        Console.Write(indent);
+        Console.Write(marker);
+        Console.Write(node.Kind);
+
+        if (node is SyntaxToken t && t.Value != null)
+        {
+            Console.Write(" ");
+            Console.Write(t.Value);
+            Console.Write("  ");
+        }
+        
+        Console.WriteLine();
+        
+        //indent += "    "; // 4 spaces between nodes 
+        indent += isLast ? "    " : "|   "; // unix tree type styling structure 
+
+        var lastChild = node.GetChildren().LastOrDefault(); 
+
+        foreach (var child in node.GetChildren())
+        {
+            // print the 'last' indent type if the node matches the last node of the children 
+            PrettyPrint(child, indent, node==lastChild);
+        }
     }
 }
 
@@ -54,10 +77,13 @@ enum SyntaxKind
     RightParenteseToken,
     
     BadToken,
-    EndOfFileToken
+    EndOfFileToken,
+    
+    NumberExpression,
+    BinaryExpression
 }
 
-class SyntaxToken
+class SyntaxToken : SyntaxNode
 {
     public SyntaxToken(SyntaxKind kind, int position, string text, object value)
     {
@@ -67,10 +93,15 @@ class SyntaxToken
         Value = value; 
     }
     
-    public SyntaxKind Kind { get; } 
+    public override SyntaxKind Kind { get; } 
     public int Position { get; }
     public string Text { get;  }
-   public object Value { get;  }
+    public object Value { get;  }
+   
+   public override IEnumerable<SyntaxNode> GetChildren() // abstract enumeration for easily walkin nodes of the tree
+   {
+       return Enumerable.Empty<SyntaxNode>(); 
+   }
 }
 
 class Lexer
@@ -170,15 +201,67 @@ class Lexer
     }
 }
 
-class SyntaxNode
+abstract class SyntaxNode
+{
+    // behavior will be implemented based on the kind? 
+    public abstract SyntaxKind Kind { get; }
+    
+    // iterator object for the node (vale, text, type etc.)
+    public abstract IEnumerable<SyntaxNode> GetChildren(); 
+
+}
+
+
+abstract class ExpressionSyntax : SyntaxNode
 {
     
 }
+
+sealed class NumberExpressionSyntax : ExpressionSyntax
+{
+    public NumberExpressionSyntax(SyntaxToken numberToken)
+    {
+        NumberToken = numberToken; 
+    }
+
+    public override SyntaxKind Kind => SyntaxKind.NumberExpression; 
+    public SyntaxToken NumberToken { get; }
+
+    public override IEnumerable<SyntaxNode> GetChildren()
+    {
+        yield return NumberToken; 
+    }
+}
+
+// operators like +, -, * etc. have the structure <leftexp> <operator> <rightexp> 
+// sealed implies it cant be further inherited 
+sealed class BinaryExpressionSyntax : ExpressionSyntax
+{
+    public BinaryExpressionSyntax(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
+    {
+        Left = left;
+        OperatorToken = operatorToken; 
+        Right = right; 
+    }
     
+    public ExpressionSyntax Left { get;  }
+    public SyntaxToken OperatorToken { get;  }
+    public ExpressionSyntax Right { get; }
+
+    // override means it overrides an abstract property from the parent class 
+    public override SyntaxKind Kind => SyntaxKind.BinaryExpression;
+
+    public override IEnumerable<SyntaxNode> GetChildren()
+    {
+        // statefull iterators...lets you create an iterator tuple? 
+        yield return Left;
+        yield return OperatorToken;
+        yield return Right;
+    }
+}
 
 class Parser
 {
-    
     // internal storage of tokens 
     private readonly SyntaxToken[] _tokens;
     private int _position; 
@@ -190,7 +273,6 @@ class Parser
         
         // instantiating our Lexer for reading the file 
         var lexer = new Lexer(text);
-        
         
         SyntaxToken token;
         do
@@ -211,11 +293,48 @@ class Parser
     {
         var index = _position + offset;
 
-        if (index >= _tokens.length)
+        if (index >= _tokens.Length)
             return _tokens[_tokens.Length - 1];
 
         return _tokens[index]; 
     }
     
-    private SyntaxToken Current => Peek(0); 
+    private SyntaxToken Current => Peek(0);
+
+    private SyntaxToken NextToken()
+    {
+        var current = Current;
+        _position++;
+        return current; 
+    }
+    
+    private SyntaxToken Match(SyntaxKind kind)
+    {
+        // match the syntax tokenm 
+        if (Current.Kind == kind)
+            return NextToken();
+        return new SyntaxToken(kind, _position, null, null); 
+    }
+    public ExpressionSyntax Parse()
+    {
+        // parse leaves and build strucutres on top of that 
+        var left = ParsePrimaryExpression();
+        
+        
+        // building a binary expression - <l> <op> <r> 
+        while (Current.Kind == SyntaxKind.PlusToken || Current.Kind == SyntaxKind.MinusToken)
+        {
+            var operatorToken = NextToken();
+            var right = ParsePrimaryExpression();
+            left = new BinaryExpressionSyntax(left, operatorToken, right); 
+        }
+
+        return left; 
+    }
+
+    private ExpressionSyntax ParsePrimaryExpression()
+    {
+        var numberToken = Match(SyntaxKind.NumberToken);
+        return new NumberExpressionSyntax(numberToken);
+    }
 }

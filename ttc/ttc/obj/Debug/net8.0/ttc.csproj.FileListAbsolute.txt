@@ -12,3 +12,4 @@ C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\r
 C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.pdb
 C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.genruntimeconfig.cache
 C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ref\ttc.dll
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.sourcelink.json
