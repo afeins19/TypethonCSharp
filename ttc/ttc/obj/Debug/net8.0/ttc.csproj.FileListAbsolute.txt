@@ -1,0 +1,14 @@
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\bin\Debug\net8.0\ttc.exe
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\bin\Debug\net8.0\ttc.deps.json
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\bin\Debug\net8.0\ttc.runtimeconfig.json
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\bin\Debug\net8.0\ttc.dll
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\bin\Debug\net8.0\ttc.pdb
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.AssemblyInfoInputs.cache
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.AssemblyInfo.cs
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.csproj.CoreCompileInputs.cache
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.dll
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\refint\ttc.dll
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.pdb
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ttc.genruntimeconfig.cache
+C:\Users\aaron\Projects\TypethonCSharp\TypethonCSharp\ttc\ttc\obj\Debug\net8.0\ref\ttc.dll
