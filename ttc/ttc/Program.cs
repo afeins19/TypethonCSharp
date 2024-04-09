@@ -27,15 +27,15 @@ class Program
             PrettyPrint(expression);
             Console.ForegroundColor = color; // reset the color for non-tree spaces 
             
+            // reporting errors to the console 
+            
         }
         
     }
 
     static void PrettyPrint(SyntaxNode node, string indent = "", bool isLast = false)
     {
-        
-        
-        
+        // characters for drawing the tree 
         var marker = isLast ? "\u2514\u2500\u2500" : "\u251c\u2500\u2500";
         
         Console.Write(indent);
@@ -106,15 +106,21 @@ class SyntaxToken : SyntaxNode
 
 class Lexer
 {
+    // class variable for the text field (global to this class)
+    private readonly string _text;
+    private int _position; 
+    
+    // arrows 
+    private List<string> _diagnostics = new List<string>(); // holds bad tokens that we encounter 
+    
     // constructor 
     public Lexer(string text)
     {
         _text = text;
     }
     
-    // class variable for the text field (global to this class)
-    private readonly string _text;
-    private int _position; 
+    // exposing diagnostics to external classes 
+    public IEnumerable<String> Diagnostics => _diagnostics; 
     
     // gets the current char 
     private char Current
@@ -182,8 +188,11 @@ class Lexer
         else if (Current == ')')
             return new SyntaxToken(SyntaxKind.RightParenteseToken, _position++, ")", null); 
         
+        // add bad syntax token to the diagnostics list 
+        _diagnostics.Add($"ERROR: Invalid Character { Current }");
+        
         // invalid operator return 
-        return new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1), null); 
+        return new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1), null); 
         
         // operator syntax token creation 
         // switch (Current)
@@ -265,6 +274,12 @@ class Parser
     // internal storage of tokens 
     private readonly SyntaxToken[] _tokens;
     private int _position; 
+    
+    // internal diagnostics 
+    private List<string> _diagnostics = new List<string>(); 
+    
+    // exposing diagnostics from the parser 
+    public IEnumerable<string> Diagnostics => _diagnostics;
 
     public Parser(string text)
     {
@@ -285,8 +300,10 @@ class Parser
                 
         } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-        _tokens = tokens.ToArray(); 
-    }
+        _tokens = tokens.ToArray();
+        _diagnostics.AddRange(lexer.Diagnostics); // save what the lexer reported 
+}
+    
     
     // quick look behind until non-eof position is reached 
     private SyntaxToken Peek(int offset)
@@ -313,6 +330,10 @@ class Parser
         // match the syntax tokenm 
         if (Current.Kind == kind)
             return NextToken();
+        
+        // catching a bad SyntaxToken when its matched 
+        _diagnostics.Add($"ERROR: Unexpected Token <{ Current.Kind }>, expected <{ kind }> ");
+        
         return new SyntaxToken(kind, _position, null, null); 
     }
     public ExpressionSyntax Parse()
